@@ -1,6 +1,7 @@
 #!/usr/bin/env python3
 import requests
 import random
+import redis
 '''
 #r = requests.get('http://www.baidu.com')
 proxies = {
@@ -25,19 +26,21 @@ for ip in response.text.split():
 print(len(proxy))
 '''
 class ProxyIpPoll(object):
+    redis_poxxyip_pool = redis.StrictRedis('localhost', port = 6379, db = 0)
     def __init__(self):
         self.available_proxyips = set()
         self.all_proxyips = set()
 
-    def get_new_proxyips(self):
-        #try:
-        response = requests.get('http://api.xicidaili.com/free2016.txt')
-        for ip in response.text.split():
-            self.all_proxyips.add(ip)
 
-        print(len(self.all_proxyips))
-        #except:
-            #print('require ip error')
+    def get_new_proxyips(self):
+        try:
+            response = requests.get('http://api.xicidaili.com/free2016.txt')
+            for ip in response.text.split():
+                self.all_proxyips.add(ip)
+
+        #print(len(self.all_proxyips))
+        except:
+            print('require ip error')
 
     def check_ip_available(self):
         test_url = 'http://www.baidu.com'
@@ -51,6 +54,7 @@ class ProxyIpPoll(object):
                 response = requests.get(test_url, proxies = proxies, timeout = 5)
                 print(response.elapsed.microseconds)
                 self.available_proxyips.add(ip)
+                ProxyIpPoll.redis_poxxyip_pool.sadd('proxyip_pool', ip)
                 print('%s is available' % ip)
 
             except:
@@ -63,6 +67,9 @@ class ProxyIpPoll(object):
     def get_random_proxyip(self):
         return random.choice(self.available_proxyips)
 
+    def updata_proxyippool(self):
+        self.all_proxyips.clear()
+        
 if __name__ == '__main__':
     ippool = ProxyIpPoll()
     ippool.get_available_proxyipool()

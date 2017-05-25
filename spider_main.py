@@ -12,7 +12,7 @@ class SpiderMain(object):
         count = 1
         self.urls.add_new_url(root_url)            #将url入口地址放入url管理器中
         while self.urls.has_new_url():      #如果有新的url地址，程序会一直运行下去
-            try:
+            #try:
                 new_url = self.urls.get_new_url()    #获取一个新的url
                 print("craw %d : %s" %(count, new_url))
                 html_cont = self.downloader.download(new_url)  #下载网页数据
@@ -24,11 +24,11 @@ class SpiderMain(object):
                 self.outputer.download_pic()
                 count += 1
 
-            except:
-                print("craw failed")
+            #except:
+                #print("craw failed")
 
 if __name__ == "__main__":
-    #root_url = "http://www.umei.cc/p/gaoqing/gangtai/15483.htm"               #入口URL
-    root_url = input('Please input url:')
+    root_url = "http://fuli.asia/luyilu/2016/0703/2146.html"               #入口URL
+    #root_url = input('Please input url:')
     obj_spider = SpiderMain()
     obj_spider.craw(root_url)

@@ -1,4 +1,7 @@
 # -*- coding: utf-8 -*-
+'''
+使用redis sadd结构直接去重，url管理器将不再需要
+'''
 class UrlManager(object):
     def __init__(self):
         self.new_urls = set()
