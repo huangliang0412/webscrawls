@@ -4,7 +4,8 @@
 #from urllib import parse
 import requests
 import random
-import redis
+from redis_connect import conn
+import aiohttp
 
 '''
 class HtmlDownloader(object):
@@ -34,22 +35,32 @@ User_Agent = ['Mozilla/5.0 (Linux; Android 4.1.1; Nexus 7 Build/JRO03D) AppleWeb
 'Mozilla/5.0 (iPod; U; CPU like Mac OS X; en) AppleWebKit/420.1 (KHTML, like Gecko) Version/3.0 Mobile/3A101a Safari/419.3']
 
 class HtmlDownloader(object):
-    proxyip_pool = redis.StrictRedis('localhost', port = 6379, db = 0)
-    def download(self, url):
+    async def download(self):
+        url = conn.rpop('task_url')
         if url is None:
             return
         #useragent = random.choice(User_Agent)
         r = "Mozilla/5.0 (X11; Ubuntu; Linux x86_64; rv:49.0) Gecko/20100101 Firefox/49.0"
-        proxyip = HtmlDownloader.proxyip_pool.srandmember('proxyip_pool')
-        proxies = {'https': proxyip}
+        headers = {'user-agent': r}
+        #proxyip = conn.srandmember('proxyip_pool')
+        #proxies = {'https': proxyip}
+        url = url.decode('utf-8')
+        async with aiohttp.request('GET', url) as resp:
+            assert resp.status == 200
+            await resp.text(encoding = 'gbk')
+            return resp.text
+
+        ''' 使用requests同步请求
         try:
-            response = requests.get(url, proxies = proxies, timeout = 5)
+            #response = requests.get(url, proxies = proxies, timeout = 5)
+            response = requests.get(url, headers = headers, timeout = 5)
             response.encoding = 'utf-8'
             print(response.status_code)
-            #print(response.text)
+            print(response.text)
             return response.text
         except:
             print('request error')
+        '''
 '''
 if __name__ == '__main__':
     test = HtmlDownloader()

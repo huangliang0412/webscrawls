@@ -69,13 +69,13 @@ class ProxyIpPoll(object):
 
     def updata_proxyippool(self):
         self.all_proxyips.clear()
-        
+'''        
 if __name__ == '__main__':
     ippool = ProxyIpPoll()
     ippool.get_available_proxyipool()
     #ippool.get_new_proxyips()
 
-
+'''
 
 
 
