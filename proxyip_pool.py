@@ -2,6 +2,7 @@
 import requests
 import random
 import redis
+from redis_connect import conn
 '''
 #r = requests.get('http://www.baidu.com')
 proxies = {
@@ -26,7 +27,7 @@ for ip in response.text.split():
 print(len(proxy))
 '''
 class ProxyIpPoll(object):
-    redis_poxxyip_pool = redis.StrictRedis('localhost', port = 6379, db = 0)
+    #redis_poxxyip_pool = redis.StrictRedis('localhost', port = 6379, db = 0)
     def __init__(self):
         self.available_proxyips = set()
         self.all_proxyips = set()
@@ -54,21 +55,33 @@ class ProxyIpPoll(object):
                 response = requests.get(test_url, proxies = proxies, timeout = 5)
                 print(response.elapsed.microseconds)
                 self.available_proxyips.add(ip)
-                ProxyIpPoll.redis_poxxyip_pool.sadd('proxyip_pool', ip)
+                #conn.sadd('proxyip_pool', ip)
                 print('%s is available' % ip)
 
             except:
                 print('%s is not available' % ip)
 
+    def store_toredis(self):
+        for ip in self.available_proxyips:
+            conn.sadd('proxyip_pool', ip)
+
     def get_available_proxyipool(self):
         self.get_new_proxyips()
         self.check_ip_available()
+        self.store_toredis()
 
     def get_random_proxyip(self):
-        return random.choice(self.available_proxyips)
+        proxyip = conn.srandmember('proxyip_pool')
+        return proxyip
+        #return random.choice(self.available_proxyips)
 
     def updata_proxyippool(self):
         self.all_proxyips.clear()
+        self.available_proxyips.clear()
+        self.get_available_proxyipool()
+        self.store_toredis('temp_pool')
+        conn.sdiffstore('proxyip_pool', 'temp_pool', 'proxyip_pool')
+        conn.delete('temp_pool')
 '''        
 if __name__ == '__main__':
     ippool = ProxyIpPoll()

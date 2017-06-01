@@ -2,6 +2,7 @@
 from bs4 import BeautifulSoup
 import re
 from redis_connect import conn
+import time
 #import urllib.parse
 from urllib.parse import urljoin
 class HtmlParser(object):
@@ -17,7 +18,7 @@ class HtmlParser(object):
             #new_full_url = "http://www.umei.cc" + new_url
             new_full_url = urljoin(rooturl, new_url) #join two urls
             new_urls.add(new_full_url)
-            conn.lpush('task_url', new_full_url)
+            conn.lpush('task_queue', new_full_url)
             print(new_full_url)
             #return new_urls
 
@@ -33,14 +34,14 @@ class HtmlParser(object):
             #new_pics.add(picture)
             #return new_pics
 
-    def parse(self, html_cont):
+    def parse(self, html_cont, page_url):
         #print(html_cont)
-        page_url = conn.rpop('task_url')
+        #page_url = conn.brpop('task_url')
         print('page_url',page_url)
         #if page_url is None or html_cont is None:
         if  html_cont is None:
             return
-
+        #time.sleep(10)
         soup = BeautifulSoup(html_cont, 'html.parser', from_encoding='gbk')
         print(soup)
         self._get_new_urls(page_url, soup)

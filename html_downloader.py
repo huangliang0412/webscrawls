@@ -35,8 +35,9 @@ User_Agent = ['Mozilla/5.0 (Linux; Android 4.1.1; Nexus 7 Build/JRO03D) AppleWeb
 'Mozilla/5.0 (iPod; U; CPU like Mac OS X; en) AppleWebKit/420.1 (KHTML, like Gecko) Version/3.0 Mobile/3A101a Safari/419.3']
 
 class HtmlDownloader(object):
-    async def download(self):
-        url = conn.rpop('task_url')
+    async def download(self, page_url):
+        #url = conn.brpop('task_url')
+        url = page_url
         if url is None:
             return
         #useragent = random.choice(User_Agent)
@@ -45,12 +46,20 @@ class HtmlDownloader(object):
         #proxyip = conn.srandmember('proxyip_pool')
         #proxies = {'https': proxyip}
         url = url.decode('utf-8')
+        async with aiohttp.ClientSession() as session:
+            async with session.get(url) as resp:
+                #assert resp.status == 200
+                data = await resp.text(encoding = 'gbk')
+                print(data)
+                return data
+        '''
         async with aiohttp.request('GET', url) as resp:
             assert resp.status == 200
             await resp.text(encoding = 'gbk')
             return resp.text
 
-        ''' 使用requests同步请求
+        '''
+        '''使用requests同步请求
         try:
             #response = requests.get(url, proxies = proxies, timeout = 5)
             response = requests.get(url, headers = headers, timeout = 5)

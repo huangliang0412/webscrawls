@@ -3,7 +3,7 @@ from redis_connect import conn
 from urllib import request
 import re
 import os
-import aiofiles, aiohttp
+import aiohttp
 
 class HtmlOutputer(object):
     #def __init__(self):
@@ -23,23 +23,22 @@ class HtmlOutputer(object):
         if os.path.exists(file_load) is None:
             os.mkdirs('/Users/HLA/PICTURE/')
         #for url_pic in self.picture:
-        while conn.llen('pic_url') > 0 :
-            url_pic = conn.rpop('pic_url')
+        while True :
+            url_pic = conn.brpop('pic_url')
             #str(url_pic, encoding= 'utf-8')
             url_pic = url_pic.decode('utf-8')
             #print(type(s))
+            async with aiohttp.ClientSession() as session:
+                async with session.get(url_pic) as resp:
+                    print('uil_pic', url_pic)
+                    r = re.sub('^http.+img/','', url_pic)
+                    print(r)
+                    filename = re.sub('/', '-', r)
+                    with open('../lilisha/'+filename, 'wb') as fd:
+                        while True:
+                            chunk = await resp.content.read(1000)
+                            if not chunk:
+                                break
+                            fd.write(chunk)
 
-            async with aiohttp.request('GET', url_pic) as resp:
-                content = await resp.text()
-            print('uil_pic', url_pic)
-            r = re.sub('^http.+img/','', url_pic)
-            print(r)
-            filename = re.sub('/', '-', r)
 
-            #f = open('../lilisha/'+filename, 'wb')
-            #req =request.Request(url_pic)
-            #response = request.urlopen(req)
-
-            #buf = response.read()
-            f.write(response.read())
-            
